@@ -1,16 +1,15 @@
-using Facepunch;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using Facepunch;
 
 namespace Oxide.Plugins
 {
-    [Info("Oil Rig Doors Fix", "MON@H", "1.0.1")]
+    [Info("OilRigDoorsFix", "MON@H", "1.0.2")]
     [Description("Fix for always open doors on Oil Rigs")]
     public class OilRigDoorsFix : RustPlugin
     {
-
-        private uint _cratePrefabID;
-        private readonly List<uint> _doorHingedSecurityIDs = new List<uint>();
+        private uint _prefabIDCrate;
+        private readonly uint[] _prefabIDs = new uint[3];
 
         #region Initialization
 
@@ -21,10 +20,39 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
-            _cratePrefabID = StringPool.Get("assets/prefabs/deployable/chinooklockedcrate/codelockedhackablecrate_oilrig.prefab");
-            _doorHingedSecurityIDs.Add(StringPool.Get("assets/bundled/prefabs/static/door.hinged.security.green.prefab"));
-            _doorHingedSecurityIDs.Add(StringPool.Get("assets/bundled/prefabs/static/door.hinged.security.blue.prefab"));
-            _doorHingedSecurityIDs.Add(StringPool.Get("assets/bundled/prefabs/static/door.hinged.security.red.prefab"));
+            uint id;
+            id = StringPool.Get("assets/prefabs/deployable/chinooklockedcrate/codelockedhackablecrate_oilrig.prefab");
+            if (id == 0)
+            {
+                PrintError("codelockedhackablecrate_oilrig.prefab is not found!");
+                return;
+            }
+            _prefabIDCrate = id;
+
+            id = StringPool.Get("assets/bundled/prefabs/static/door.hinged.security.green.prefab");
+            if (id == 0)
+            {
+                PrintError("door.hinged.security.green.prefab is not found!");
+                return;
+            }
+            _prefabIDs[0] = id;
+
+            id = StringPool.Get("assets/bundled/prefabs/static/door.hinged.security.blue.prefab");
+            if (id == 0)
+            {
+                PrintError("door.hinged.security.blue.prefab is not found!");
+                return;
+            }
+            _prefabIDs[1] = id;
+
+            id = StringPool.Get("assets/bundled/prefabs/static/door.hinged.security.red.prefab");
+            if (id == 0)
+            {
+                PrintError("door.hinged.security.red.prefab is not found!");
+                return;
+            }
+            _prefabIDs[2] = id;
+
             Subscribe(nameof(OnEntitySpawned));
         }
 
@@ -34,33 +62,37 @@ namespace Oxide.Plugins
 
         private void OnEntitySpawned(HackableLockedCrate crate)
         {
-            if (crate.prefabID == _cratePrefabID)
+            if (crate.prefabID != _prefabIDCrate)
             {
-                List<PressButton> pressButtons = Pool.GetList<PressButton>();
-                List<Door> doors = Pool.GetList<Door>();
-                Vis.Entities(crate.transform.position, 5f, doors);
+                return;
+            }
 
-                foreach (Door door in doors)
+            List<PressButton> pressButtons = Pool.GetList<PressButton>();
+            List<Door> doors = Pool.GetList<Door>();
+            Vis.Entities(crate.transform.position, 5f, doors);
+
+            foreach (Door door in doors)
+            {
+                if (!door.IsOpen() || !_prefabIDs.Contains(door.prefabID))
                 {
-                    if (door.IsOpen() && _doorHingedSecurityIDs.Contains(door.prefabID))
-                    {
-                        pressButtons = Pool.GetList<PressButton>();
-                        Vis.Entities(door.transform.position, 2f, pressButtons);
-                        foreach (PressButton pressButton in pressButtons)
-                        {
-                            pressButton.SetFlag(BaseEntity.Flags.On, true, false, true);
-                            pressButton.Invoke(new Action(pressButton.UnpowerTime), pressButton.pressPowerTime);
-                            pressButton.SetFlag(BaseEntity.Flags.Reserved3, true, false, true);
-                            pressButton.SendNetworkUpdateImmediate(false);
-                            pressButton.MarkDirty();
-                            pressButton.Invoke(new Action(pressButton.Unpress), pressButton.pressDuration);
-                        }
-                    }
+                    continue;
                 }
 
-                Pool.FreeList(ref doors);
-                Pool.FreeList(ref pressButtons);
+                pressButtons.Clear();
+                Vis.Entities(door.transform.position, 2f, pressButtons);
+                foreach (PressButton pressButton in pressButtons)
+                {
+                    pressButton.SetFlag(BaseEntity.Flags.On, true, false, true);
+                    pressButton.Invoke(new Action(pressButton.UnpowerTime), pressButton.pressPowerTime);
+                    pressButton.SetFlag(BaseEntity.Flags.Reserved3, true, false, true);
+                    pressButton.SendNetworkUpdateImmediate(false);
+                    pressButton.MarkDirty();
+                    pressButton.Invoke(new Action(pressButton.Unpress), pressButton.pressDuration);
+                }
             }
+
+            Pool.FreeList(ref doors);
+            Pool.FreeList(ref pressButtons);
         }
 
         #endregion Oxide Hooks
