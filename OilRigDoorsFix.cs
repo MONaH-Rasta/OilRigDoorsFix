@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Facepunch;
+
+using Pool = Facepunch.Pool;
 
 namespace Oxide.Plugins
 {
-    [Info("OilRigDoorsFix", "MON@H", "1.0.2")]
+    [Info("OilRigDoorsFix", "MON@H", "1.0.3")]
     [Description("Fix for always open doors on Oil Rigs")]
     public class OilRigDoorsFix : RustPlugin
     {
@@ -13,10 +14,7 @@ namespace Oxide.Plugins
 
         #region Initialization
 
-        private void Init()
-        {
-            Unsubscribe(nameof(OnEntitySpawned));
-        }
+        private void Init() => Unsubscribe(nameof(OnEntitySpawned));
 
         private void OnServerInitialized()
         {
@@ -67,8 +65,8 @@ namespace Oxide.Plugins
                 return;
             }
 
-            List<PressButton> pressButtons = Pool.GetList<PressButton>();
-            List<Door> doors = Pool.GetList<Door>();
+            List<PressButton> pressButtons = Pool.Get<List<PressButton>>();
+            List<Door> doors = Pool.Get<List<Door>>();
             Vis.Entities(crate.transform.position, 5f, doors);
 
             foreach (Door door in doors)
@@ -91,8 +89,8 @@ namespace Oxide.Plugins
                 }
             }
 
-            Pool.FreeList(ref doors);
-            Pool.FreeList(ref pressButtons);
+            Pool.FreeUnmanaged(ref doors);
+            Pool.FreeUnmanaged(ref pressButtons);
         }
 
         #endregion Oxide Hooks
