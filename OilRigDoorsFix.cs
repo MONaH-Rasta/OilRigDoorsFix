@@ -5,7 +5,7 @@ using Pool = Facepunch.Pool;
 
 namespace Oxide.Plugins
 {
-    [Info("OilRigDoorsFix", "MON@H", "1.0.3")]
+    [Info("OilRigDoorsFix", "MON@H", "1.0.4")]
     [Description("Fix for always open doors on Oil Rigs")]
     public class OilRigDoorsFix : RustPlugin
     {
@@ -83,7 +83,7 @@ namespace Oxide.Plugins
                     pressButton.SetFlag(BaseEntity.Flags.On, true, false, true);
                     pressButton.Invoke(new Action(pressButton.UnpowerTime), pressButton.pressPowerTime);
                     pressButton.SetFlag(BaseEntity.Flags.Reserved3, true, false, true);
-                    pressButton.SendNetworkUpdateImmediate(false);
+                    pressButton.SendNetworkUpdateImmediate();
                     pressButton.MarkDirty();
                     pressButton.Invoke(new Action(pressButton.Unpress), pressButton.pressDuration);
                 }
