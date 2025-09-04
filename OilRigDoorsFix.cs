@@ -18,33 +18,28 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
-            uint id;
-            id = StringPool.Get("assets/prefabs/deployable/chinooklockedcrate/codelockedhackablecrate_oilrig.prefab");
-            if (id == 0)
+            if (!StringPool.toNumber.TryGetValue("assets/prefabs/deployable/chinooklockedcrate/codelockedhackablecrate_oilrig.prefab", out uint id))
             {
                 PrintError("codelockedhackablecrate_oilrig.prefab is not found!");
                 return;
             }
             _prefabIDCrate = id;
 
-            id = StringPool.Get("assets/bundled/prefabs/static/door.hinged.security.green.prefab");
-            if (id == 0)
+            if (!StringPool.toNumber.TryGetValue("assets/bundled/prefabs/static/door.hinged.security.green.prefab", out id))
             {
                 PrintError("door.hinged.security.green.prefab is not found!");
                 return;
             }
             _prefabIDs[0] = id;
 
-            id = StringPool.Get("assets/bundled/prefabs/static/door.hinged.security.blue.prefab");
-            if (id == 0)
+            if (!StringPool.toNumber.TryGetValue("assets/bundled/prefabs/static/door.hinged.security.blue.prefab", out id))
             {
                 PrintError("door.hinged.security.blue.prefab is not found!");
                 return;
             }
             _prefabIDs[1] = id;
 
-            id = StringPool.Get("assets/bundled/prefabs/static/door.hinged.security.red.prefab");
-            if (id == 0)
+            if (!StringPool.toNumber.TryGetValue("assets/bundled/prefabs/static/door.hinged.security.red.prefab", out id))
             {
                 PrintError("door.hinged.security.red.prefab is not found!");
                 return;
